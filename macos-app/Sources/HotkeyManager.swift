@@ -57,8 +57,7 @@ class HotkeyManager {
 
     private func install() {
         let mask: CGEventMask =
-            (1 << CGEventType.flagsChanged.rawValue) |
-            (1 << CGEventType.keyDown.rawValue)
+            (1 << CGEventType.flagsChanged.rawValue)
 
         guard let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -93,17 +92,14 @@ class HotkeyManager {
         switch type {
         case .flagsChanged:
             return handleFlagsChanged(event: event, hotkey: hotkey)
-        case .keyDown:
-            return handleKeyDown(event: event, hotkey: hotkey)
         default:
             return Unmanaged.passRetained(event)
         }
     }
 
-    // Modifier keys (Control, Option, Command, Shift) fire flagsChanged events
+    // Modifier keys (Control, Option, Shift) fire flagsChanged events
     private func handleFlagsChanged(event: CGEvent, hotkey: HotkeyOption) -> Unmanaged<CGEvent>? {
-        guard let flag = hotkey.cgFlag else { return Unmanaged.passRetained(event) }
-
+        let flag = hotkey.cgFlag
         let isDown = event.flags.contains(flag)
 
         if isDown && !modifierWasDown {
@@ -125,32 +121,16 @@ class HotkeyManager {
     }
 
     // Fn key fires keyDown events
-    private func handleKeyDown(event: CGEvent, hotkey: HotkeyOption) -> Unmanaged<CGEvent>? {
-        guard hotkey == .fn else { return Unmanaged.passRetained(event) }
-
-        let now = Date().timeIntervalSince1970
-        if now - lastPressTime < doublePressInterval {
-            lastPressTime = 0
-            DispatchQueue.main.async { self.onToggle?() }
-            return nil // consume event
-        } else {
-            lastPressTime = now
-        }
-
-        return Unmanaged.passRetained(event)
-    }
 }
 
 // MARK: - HotkeyOption helpers
 
 private extension HotkeyOption {
-    var cgFlag: CGEventFlags? {
+    var cgFlag: CGEventFlags {
         switch self {
         case .control: return .maskControl
         case .option:  return .maskAlternate
-        case .command: return .maskCommand
         case .shift:   return .maskShift
-        case .fn:      return nil // handled via keyDown
         }
     }
 }

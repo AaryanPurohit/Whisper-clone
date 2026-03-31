@@ -4,9 +4,7 @@ import Combine
 enum HotkeyOption: String, CaseIterable, Codable {
     case control = "Control"
     case option  = "Option (Alt)"
-    case command = "Command (⌘)"
     case shift   = "Shift"
-    case fn      = "Fn"
 
     var displayName: String { rawValue }
 }
@@ -38,6 +36,7 @@ class PreferencesManager: ObservableObject {
 
     private init() {
         let saved = UserDefaults.standard.string(forKey: Keys.hotkey) ?? HotkeyOption.control.rawValue
+        // Fall back to .control if a previously saved value (e.g. "Fn") no longer exists
         self.hotkey = HotkeyOption(rawValue: saved) ?? .control
         self.apiKey = KeychainHelper.load(key: Keys.apiKey) ?? ""
     }
